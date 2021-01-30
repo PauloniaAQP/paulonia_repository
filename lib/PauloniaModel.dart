@@ -1,0 +1,10 @@
+library paulonia_repository;
+
+/// Abstract class for create a Model
+abstract class PauloniaModel<Id> {
+  /// The id of the model
+  Id get id;
+
+  /// The date and time of creation of this date
+  DateTime get created;
+}
