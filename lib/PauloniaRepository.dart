@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:paulonia_document_service/paulonia_document_service.dart';
 import 'package:paulonia_repository/PauloniaModel.dart';
+import 'package:paulonia_repository/RepoUpdate.dart';
 import 'package:paulonia_repository/constants.dart';
 
 /// Abstract class for create a Repository
@@ -43,7 +44,7 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
   /// and you set the property to notify in the function.
   /// This serves to keep the controllers that make use of the models in this repository notified
   /// and has the same data. (Only if this repositoru is used in multiple controllers)
-  void addListener(Function(List<Id>) listener) {
+  void addListener(Function(List<RepoUpdate<Id>>) listener) {
     _repositoryStream.stream.listen(listener);
   }
 
@@ -75,7 +76,7 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
     if (queryRes.docs.isEmpty) return null;
     Model res = getFromDocSnap(queryRes.docs.first);
     repositoryMap[id] = res;
-    if (notify) update([id]);
+    if (notify) update(RepoUpdateType.get, ids: [id]);
     return res;
   }
 
@@ -114,7 +115,7 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
     if (_idList.length <= PauloniaRepoConstants.ARRAY_QUERIES_ITEM_LIMIT) {
       newModels.addAll(await _getFromIdList(_idList, cache: cache));
       addInRepository(newModels);
-      if (_idList.isNotEmpty && notify) update(_idList);
+      if (_idList.isNotEmpty && notify) update(RepoUpdateType.get, ids: _idList);
       res.addAll(newModels);
       return res;
     }
@@ -130,7 +131,7 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
       end += PauloniaRepoConstants.ARRAY_QUERIES_ITEM_LIMIT;
     }
     addInRepository(newModels);
-    if (_idList.isNotEmpty && notify) update(_idList);
+    if (_idList.isNotEmpty && notify) update(RepoUpdateType.get, ids: _idList);
     res.addAll(newModels);
     return res;
   }
@@ -147,15 +148,66 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
     }
   }
 
-  /// This functions notify in [_repositoryStream] that are a change in [updatedIds]
+  /// This functions notify in [_repositoryStream] that are a change in the models
   /// in [repositoryMap]
+  ///
+  /// You can use [ids] to update a list of ids or you can use [models] to update
+  /// a list of models. The type of all updates will be [updateType]
   ///
   /// ! Not use this function outside the repositories
   ///
   /// In the extended class, this function has to be called always for the models
   /// obtained from the database. (like getFromId)
-  void update(List<Id> updatedIds) {
-    _repositoryStream.add(updatedIds);
+  void update(
+    RepoUpdateType updateType, {
+    List<Id> ids,
+    List<Model> models
+  }){
+    if(ids == null && models == null) return;
+    List<RepoUpdate> updates;
+    if(ids != null){
+      updates = ids.map((e) => RepoUpdate<Id>(modelId: e, type: updateType)).toList();
+    }
+    else{
+      updates = models.map((e) => RepoUpdate<Id>(modelId: e.id, type: updateType)).toList();
+    }
+    _repositoryStream.add(updates);
+  }
+
+  /// This functions notify in [_repositoryStream] that are a change in the models
+  /// in [repositoryMap]
+  ///
+  /// You can use [ids] to update a list of ids or you can use [models] to update
+  /// a list of models.
+  /// Is needed the [updateTypes] list in the order of the ids or models to
+  /// set the update type in each model.
+  ///
+  /// ! Not use this function outside the repositories
+  ///
+  /// In the extended class, this function has to be called always for the models
+  /// obtained from the database. (like getFromId)
+  void updateDifferentTypes(
+    List<RepoUpdateType> updateTypes, {
+    List<Id> ids,
+    List<Model> models
+  }) {
+    if(ids == null && models == null) return;
+    List<RepoUpdate> updates = [];
+    for(int i = 0; i < updateTypes.length; i++){
+      if(ids != null){
+        updates.add(RepoUpdate<Id>(
+          modelId: ids[i],
+          type: updateTypes[i],
+        ));
+      }
+      else{
+        updates.add(RepoUpdate<Id>(
+          modelId: models[i].id,
+          type: updateTypes[i],
+        ));
+      }
+    }
+    _repositoryStream.add(updates);
   }
 
   /// Gets a model list from an id list
@@ -184,6 +236,7 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
   CollectionReference _collectionReference;
 
   /// Stream controller that handles the changes in [repositoryMap]
-  final StreamController<List<Id>> _repositoryStream =
-      StreamController<List<Id>>.broadcast();
+  final StreamController<List<RepoUpdate<Id>>> _repositoryStream =
+      StreamController<List<RepoUpdate<Id>>>.broadcast();
+
 }
