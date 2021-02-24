@@ -148,6 +148,18 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
     }
   }
 
+  /// This function delete the models with [ids] from [repositoryMap]
+  ///
+  /// ! Not use this function outside the repositories
+  ///
+  /// In the extended class, this function has to be called always for the models
+  /// deleted from the database
+  void deleteInRepository(List<Id> ids){
+    for (Id id in ids){
+      repositoryMap.remove(id);
+    }
+  }
+
   /// This functions notify in [_repositoryStream] that are a change in the models
   /// in [repositoryMap]
   ///
