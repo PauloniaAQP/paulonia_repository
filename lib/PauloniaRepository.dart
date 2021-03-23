@@ -16,7 +16,7 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
   /// Getter of the collection reference of this repository.
   ///
   /// Is needed override this
-  CollectionReference get collectionReference => _collectionReference;
+  CollectionReference? get collectionReference => _collectionReference;
 
   /// Repository map that stores the models of the repository
   ///
@@ -59,20 +59,20 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
   /// * Set [notify] to call [_update()] function and notify to all listener
   /// that is a change in the model with [id] in [repositoryMap]. This is only when
   /// the model is obtained from the database and estored in [repositoryMap].
-  Future<Model> getFromId(
+  Future<Model?> getFromId(
     Id id, {
     bool cache = false,
     bool refreshRepoData = false,
     bool notify = false,
   }) async {
     if (!refreshRepoData) {
-      Model res = repositoryMap[id];
+      Model? res = repositoryMap[id];
       if (res != null) return res;
     }
     Query query =
-        collectionReference.where(FieldPath.documentId, isEqualTo: id);
+        collectionReference!.where(FieldPath.documentId, isEqualTo: id);
     QuerySnapshot queryRes =
-        await PauloniaDocumentService.runQuery(query, cache);
+        await (PauloniaDocumentService.runQuery(query, cache) as FutureOr<QuerySnapshot>);
     if (queryRes.docs.isEmpty) return null;
     Model res = (await getFromDocSnapList(queryRes.docs)).first;
     repositoryMap[id] = res;
@@ -101,7 +101,7 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
     List<Id> _idList = [];
     List<Model> res = [];
     if (!refreshRepoData) {
-      Model modelRes;
+      Model? modelRes;
       for (Id id in idList) {
         modelRes = repositoryMap[id];
         if (modelRes != null)
@@ -113,7 +113,7 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
       _idList = idList;
     List<Model> newModels = [];
     if (_idList.length <= PauloniaRepoConstants.ARRAY_QUERIES_ITEM_LIMIT) {
-      newModels.addAll(await _getFromIdList(_idList, cache: cache));
+      newModels.addAll(await (_getFromIdList(_idList, cache: cache) as FutureOr<Iterable<Model>>));
       addInRepository(newModels);
       if (_idList.isNotEmpty && notify) update(RepoUpdateType.get, ids: _idList);
       res.addAll(newModels);
@@ -124,9 +124,9 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
     while (true) {
       if (end > _idList.length) end = _idList.length;
       if (end == start) break;
-      newModels.addAll(await _getFromIdList(
+      newModels.addAll(await (_getFromIdList(
           _idList.getRange(start, end).toList(),
-          cache: cache));
+          cache: cache) as FutureOr<Iterable<Model>>));
       start = end;
       end += PauloniaRepoConstants.ARRAY_QUERIES_ITEM_LIMIT;
     }
@@ -172,8 +172,8 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
   /// obtained from the database. (like getFromId)
   void update(
     RepoUpdateType updateType, {
-    List<Id> ids,
-    List<Model> models
+    List<Id>? ids,
+    List<Model>? models
   }){
     if(ids == null && models == null) return;
     List<RepoUpdate> updates;
@@ -181,9 +181,9 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
       updates = ids.map((e) => RepoUpdate<Id>(modelId: e, type: updateType)).toList();
     }
     else{
-      updates = models.map((e) => RepoUpdate<Id>(modelId: e.id, type: updateType)).toList();
+      updates = models!.map((e) => RepoUpdate<Id>(modelId: e.id, type: updateType)).toList();
     }
-    _repositoryStream.add(updates);
+    _repositoryStream.add(updates as List<RepoUpdate<Id>>);
   }
 
   /// This functions notify in [_repositoryStream] that are a change in the models
@@ -200,8 +200,8 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
   /// obtained from the database. (like getFromId)
   void updateDifferentTypes(
     List<RepoUpdateType> updateTypes, {
-    List<Id> ids,
-    List<Model> models
+    List<Id>? ids,
+    List<Model>? models
   }) {
     if(ids == null && models == null) return;
     List<RepoUpdate> updates = [];
@@ -214,12 +214,12 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
       }
       else{
         updates.add(RepoUpdate<Id>(
-          modelId: models[i].id,
+          modelId: models![i].id,
           type: updateTypes[i],
         ));
       }
     }
-    _repositoryStream.add(updates);
+    _repositoryStream.add(updates as List<RepoUpdate<Id>>);
   }
 
   /// Gets a model list from an id list
@@ -228,7 +228,7 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
   /// It makes the query and gets the models with the ids id [idList]
   ///
   /// * Set [cache] to true to get the models from the cache of the database
-  Future<List<Model>> _getFromIdList(
+  Future<List<Model>?> _getFromIdList(
     List<Id> idList, {
     bool cache = false,
   }) async {
@@ -236,16 +236,16 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
       return null;
     }
     if (idList.isEmpty) return [];
-    Query query = collectionReference
+    Query query = collectionReference!
         .where(FieldPath.documentId, whereIn: idList)
         .limit(PauloniaRepoConstants.ARRAY_QUERIES_ITEM_LIMIT);
     QuerySnapshot queryRes =
-        await PauloniaDocumentService.runQuery(query, cache);
+        await (PauloniaDocumentService.runQuery(query, cache) as FutureOr<QuerySnapshot>);
     return getFromDocSnapList(queryRes.docs);
   }
 
   /// Private value of the collection reference of this repository
-  CollectionReference _collectionReference;
+  CollectionReference? _collectionReference;
 
   /// Stream controller that handles the changes in [repositoryMap]
   final StreamController<List<RepoUpdate<Id>>> _repositoryStream =

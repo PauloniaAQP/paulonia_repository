@@ -8,8 +8,8 @@ class RepoUpdate<Id>{
   RepoUpdateType type;
 
   RepoUpdate({
-    this.modelId,
-    this.type,
+    required this.modelId,
+    required this.type,
   });
 
 }

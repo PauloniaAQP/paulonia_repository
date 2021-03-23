@@ -1,3 +1,7 @@
+## [0.2.0]
+
+- Null safety migration
+
 ## [0.1.0]
 
 - New repo update login added
