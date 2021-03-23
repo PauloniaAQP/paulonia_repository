@@ -1,6 +1,6 @@
 name: paulonia_repository
 description: Package with abstract class for create Models and Repositories
-version: 0.0.1
+version: 0.1.0
 homepage: https://paulonia.dev
 repository: https://github.com/PauloniaAQP/paulonia_repository
 
