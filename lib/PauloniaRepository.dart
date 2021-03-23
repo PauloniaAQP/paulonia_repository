@@ -74,7 +74,7 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
     QuerySnapshot queryRes =
         await PauloniaDocumentService.runQuery(query, cache);
     if (queryRes.docs.isEmpty) return null;
-    Model res = getFromDocSnap(queryRes.docs.first);
+    Model res = (await getFromDocSnapList(queryRes.docs)).first;
     repositoryMap[id] = res;
     if (notify) update(RepoUpdateType.get, ids: [id]);
     return res;
