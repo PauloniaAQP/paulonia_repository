@@ -1,6 +1,5 @@
 /// Class used in repository updates
-class RepoUpdate<Id>{
-
+class RepoUpdate<Id> {
   /// Id of the model
   Id modelId;
 
@@ -11,7 +10,6 @@ class RepoUpdate<Id>{
     required this.modelId,
     required this.type,
   });
-
 }
 
 enum RepoUpdateType {

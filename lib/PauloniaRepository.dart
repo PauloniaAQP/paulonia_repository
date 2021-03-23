@@ -72,7 +72,8 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
     Query query =
         collectionReference!.where(FieldPath.documentId, isEqualTo: id);
     QuerySnapshot queryRes =
-        await (PauloniaDocumentService.runQuery(query, cache) as FutureOr<QuerySnapshot>);
+        await (PauloniaDocumentService.runQuery(query, cache)
+            as FutureOr<QuerySnapshot>);
     if (queryRes.docs.isEmpty) return null;
     Model res = (await getFromDocSnapList(queryRes.docs)).first;
     repositoryMap[id] = res;
@@ -113,9 +114,11 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
       _idList = idList;
     List<Model> newModels = [];
     if (_idList.length <= PauloniaRepoConstants.ARRAY_QUERIES_ITEM_LIMIT) {
-      newModels.addAll(await (_getFromIdList(_idList, cache: cache) as FutureOr<Iterable<Model>>));
+      newModels.addAll(await (_getFromIdList(_idList, cache: cache)
+          as FutureOr<Iterable<Model>>));
       addInRepository(newModels);
-      if (_idList.isNotEmpty && notify) update(RepoUpdateType.get, ids: _idList);
+      if (_idList.isNotEmpty && notify)
+        update(RepoUpdateType.get, ids: _idList);
       res.addAll(newModels);
       return res;
     }
@@ -154,8 +157,8 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
   ///
   /// In the extended class, this function has to be called always for the models
   /// deleted from the database
-  void deleteInRepository(List<Id> ids){
-    for (Id id in ids){
+  void deleteInRepository(List<Id> ids) {
+    for (Id id in ids) {
       repositoryMap.remove(id);
     }
   }
@@ -170,18 +173,16 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
   ///
   /// In the extended class, this function has to be called always for the models
   /// obtained from the database. (like getFromId)
-  void update(
-    RepoUpdateType updateType, {
-    List<Id>? ids,
-    List<Model>? models
-  }){
-    if(ids == null && models == null) return;
+  void update(RepoUpdateType updateType, {List<Id>? ids, List<Model>? models}) {
+    if (ids == null && models == null) return;
     List<RepoUpdate> updates;
-    if(ids != null){
-      updates = ids.map((e) => RepoUpdate<Id>(modelId: e, type: updateType)).toList();
-    }
-    else{
-      updates = models!.map((e) => RepoUpdate<Id>(modelId: e.id, type: updateType)).toList();
+    if (ids != null) {
+      updates =
+          ids.map((e) => RepoUpdate<Id>(modelId: e, type: updateType)).toList();
+    } else {
+      updates = models!
+          .map((e) => RepoUpdate<Id>(modelId: e.id, type: updateType))
+          .toList();
     }
     _repositoryStream.add(updates as List<RepoUpdate<Id>>);
   }
@@ -198,21 +199,17 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
   ///
   /// In the extended class, this function has to be called always for the models
   /// obtained from the database. (like getFromId)
-  void updateDifferentTypes(
-    List<RepoUpdateType> updateTypes, {
-    List<Id>? ids,
-    List<Model>? models
-  }) {
-    if(ids == null && models == null) return;
+  void updateDifferentTypes(List<RepoUpdateType> updateTypes,
+      {List<Id>? ids, List<Model>? models}) {
+    if (ids == null && models == null) return;
     List<RepoUpdate> updates = [];
-    for(int i = 0; i < updateTypes.length; i++){
-      if(ids != null){
+    for (int i = 0; i < updateTypes.length; i++) {
+      if (ids != null) {
         updates.add(RepoUpdate<Id>(
           modelId: ids[i],
           type: updateTypes[i],
         ));
-      }
-      else{
+      } else {
         updates.add(RepoUpdate<Id>(
           modelId: models![i].id,
           type: updateTypes[i],
@@ -240,7 +237,8 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
         .where(FieldPath.documentId, whereIn: idList)
         .limit(PauloniaRepoConstants.ARRAY_QUERIES_ITEM_LIMIT);
     QuerySnapshot queryRes =
-        await (PauloniaDocumentService.runQuery(query, cache) as FutureOr<QuerySnapshot>);
+        await (PauloniaDocumentService.runQuery(query, cache)
+            as FutureOr<QuerySnapshot>);
     return getFromDocSnapList(queryRes.docs);
   }
 
@@ -250,5 +248,4 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
   /// Stream controller that handles the changes in [repositoryMap]
   final StreamController<List<RepoUpdate<Id>>> _repositoryStream =
       StreamController<List<RepoUpdate<Id>>>.broadcast();
-
 }
