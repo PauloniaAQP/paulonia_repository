@@ -1,6 +1,6 @@
 name: paulonia_repository
 description: Package with abstract class for create Models and Repositories
-version: 0.2.0
+version: 0.3.0
 homepage: https://paulonia.dev
 repository: https://github.com/PauloniaAQP/paulonia_repository
 
@@ -11,9 +11,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  get: ^4.0.0-nullsafety.2
-  cloud_firestore: ^1.0.2
-  paulonia_document_service: ^0.1.0
+  get: ^4.1.4
+  cloud_firestore: ^1.0.7
+  paulonia_document_service: ^0.2.0
 
 dev_dependencies:
   flutter_test:
