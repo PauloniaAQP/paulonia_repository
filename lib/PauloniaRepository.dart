@@ -71,7 +71,8 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
     }
     Query query =
         collectionReference!.where(FieldPath.documentId, isEqualTo: id);
-    QuerySnapshot? queryRes = await PauloniaDocumentService.runQuery(query, cache);
+    QuerySnapshot? queryRes =
+        await PauloniaDocumentService.runQuery(query, cache);
     if (queryRes == null || queryRes.docs.isEmpty) return null;
     Model res = (await getFromDocSnapList(queryRes.docs)).first;
     repositoryMap[id] = res;
@@ -125,8 +126,9 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
       if (end > _idList.length) end = _idList.length;
       if (end == start) break;
       newModels.addAll((await _getFromIdList(
-          _idList.getRange(start, end).toList(),
-          cache: cache)) ?? []);
+              _idList.getRange(start, end).toList(),
+              cache: cache)) ??
+          []);
       start = end;
       end += PauloniaRepoConstants.ARRAY_QUERIES_ITEM_LIMIT;
     }
@@ -233,7 +235,8 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
     Query query = collectionReference!
         .where(FieldPath.documentId, whereIn: idList)
         .limit(PauloniaRepoConstants.ARRAY_QUERIES_ITEM_LIMIT);
-    QuerySnapshot? queryRes = await PauloniaDocumentService.runQuery(query, cache);
+    QuerySnapshot? queryRes =
+        await PauloniaDocumentService.runQuery(query, cache);
     if (queryRes == null) return [];
     return getFromDocSnapList(queryRes.docs);
   }
