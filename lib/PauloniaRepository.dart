@@ -112,8 +112,7 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
       _idList = idList;
     List<Model> newModels = [];
     if (_idList.length <= PauloniaRepoConstants.ARRAY_QUERIES_ITEM_LIMIT) {
-      newModels.addAll(await (_getFromIdList(_idList, cache: cache)
-          as FutureOr<Iterable<Model>>));
+      newModels.addAll((await _getFromIdList(_idList, cache: cache)) ?? []);
       addInRepository(newModels);
       if (_idList.isNotEmpty && notify)
         update(RepoUpdateType.get, ids: _idList);
@@ -125,9 +124,9 @@ abstract class PauloniaRepository<Id, Model extends PauloniaModel<Id>>
     while (true) {
       if (end > _idList.length) end = _idList.length;
       if (end == start) break;
-      newModels.addAll(await (_getFromIdList(
+      newModels.addAll((await _getFromIdList(
           _idList.getRange(start, end).toList(),
-          cache: cache) as FutureOr<Iterable<Model>>));
+          cache: cache)) ?? []);
       start = end;
       end += PauloniaRepoConstants.ARRAY_QUERIES_ITEM_LIMIT;
     }
