@@ -1,3 +1,7 @@
+## [0.3.1]
+
+- Fix some bugs with null values
+
 ## [0.3.0]
 
 - Dependencies updated
