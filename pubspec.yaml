@@ -9,11 +9,14 @@ environment:
   flutter: ">=1.17.0"
 
 dependencies:
-  cloud_firestore: ^3.1.10
+  cloud_firestore: ^4.0.3
   flutter:
     sdk: flutter
   get: ^4.6.1
-  paulonia_document_service: ^0.3.0
+  paulonia_document_service:
+    git:
+      url: https://github.com/PauloniaAQP/paulonia_document_service
+      ref: firestore_update
 
 dev_dependencies:
   flutter_test:
