@@ -1,6 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:paulonia_repository/PauloniaModel.dart';
+import 'package:paulonia_repository/PauloniaRepository.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+class MyModel extends PauloniaModel<String> {
+
+  late String id;
+  late String value;
+  late Timestamp created;
+
+  MyModel(this.id, this.value, this.created);
+
+}
+
+class MyRepository extends PauloniaRepository<String, MyModel> {
+
+  CollectionReference? _collectionReference = FirebaseFirestore.instance.collection("test");
+
+  CollectionReference? get collectionReference => _collectionReference;
+
+  MyModel getFromDocSnap(DocumentSnapshot docSnap) {
+    return MyModel(
+      docSnap.id,
+      docSnap.get("value"),
+      docSnap.get('created'),
+    );
+  }
+
+  Future<List<MyModel>> getAll() async {
+    QuerySnapshot snapshot = await collectionReference!.get();
+    return getFromDocSnapList(snapshot.docs);
+  }
+}
+
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(MyApp());
 }
 
@@ -32,7 +72,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+  MyHomePage({Key? key, required this.title}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -51,6 +91,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+
+  MyRepository repository = MyRepository();
 
   void _incrementCounter() {
     setState(() {
@@ -97,13 +139,24 @@ class _MyHomePageState extends State<MyHomePage> {
           // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
+            FutureBuilder(future: repository.getAll(), builder: (context, snap) {
+              if (snap.hasData) {
+                if (snap.data == null) {
+                  return const Text("null!!");
+                }
+                List<Widget> children = [];
+                for (MyModel model in snap.data! as List<MyModel>) {
+                  children.add(Text(model.value));
+                }
+                return Column(
+                  children: children,
+                );
+              }
+              if (snap.hasError) {
+                throw snap.error!;
+              }
+              return const Text("Loading");
+            }),
           ],
         ),
       ),
