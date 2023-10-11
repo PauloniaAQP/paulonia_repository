@@ -4,7 +4,4 @@ library paulonia_repository;
 abstract class PauloniaModel<Id> {
   /// The id of the model
   Id get id;
-
-  /// The date and time of creation of this date
-  DateTime get created;
 }

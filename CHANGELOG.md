@@ -1,3 +1,8 @@
+## [0.5.0]
+
+- Dependencies updated to run with Flutter 3.13.
+- `created` field removed from `PauloniaModel`.
+
 ## [0.4.0]
 
 - Dependencies updated
